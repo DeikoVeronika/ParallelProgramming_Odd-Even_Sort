@@ -7,7 +7,7 @@
 #include <string>
 
 //cd C:\Users\deyko\source\repos\ParallelProgramming_Odd-Even_Sort\x64\Release
-//mpiexec -n 2 ParallelProgramming_Odd-Even_Sort.exe 100000
+//mpiexec -n 1 ParallelProgramming_Odd-Even_Sort.exe 10000000
 
 std::vector<int> generateRandomArray(int size) {
 	std::vector<int> array(size);
@@ -28,16 +28,19 @@ void printProcessInfo(int rank, int size, int arraySize) {
 	std::cout << "Process " << rank << " on " << processorName << std::endl;
 }
 
+//sharing initial data between all processes
 void distributeData(const std::vector<int>& globalArray, std::vector<int>& localArray,
 	int elementsPerProcess, int rootRank) {
 	MPI_Scatter(globalArray.data(), elementsPerProcess, MPI_INT,
 		localArray.data(), elementsPerProcess, MPI_INT, rootRank, MPI_COMM_WORLD);
 }
 
+//sorting in each of the subarrays
 void sortLocalArray(std::vector<int>& array) {
 	std::sort(array.begin(), array.end());
 }
 
+//merge two already sorted ranges of items into a single sorted range
 void exchangeAndMerge(std::vector<int>& localArray, const std::vector<int>& receivedArray,
 	std::vector<int>& mergedArray, bool keepSmaller) {
 	std::merge(localArray.begin(), localArray.end(),
